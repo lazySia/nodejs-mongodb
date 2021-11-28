@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/lazySia/nodejs-mongodb#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "global": "^4.4.0",
+    "nodemon": "^2.0.15"
   }
 }
