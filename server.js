@@ -3,8 +3,11 @@ const app = express();
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.listen(8080, () => {
-  console.log("listening on 8080");
+const MongoClient = require("mongodb").MongoClient;
+MongoClient.connect("mongodb+srv://admin:qwer1234@cluster0.ka8sc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", function (에러, client) {
+  app.listen(8080, () => {
+    console.log("listening on 8080");
+  });
 });
 
 app.get("/pet", (요청, 응답) => {
@@ -25,5 +28,4 @@ app.get("/write", (요청, 응답) => {
 
 app.post("/add", (요청, 응답) => {
   응답.send("전송완료");
-  console.log(요청.body);
 });
