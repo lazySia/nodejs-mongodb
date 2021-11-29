@@ -46,6 +46,21 @@
       </div>
     </nav>
 
+    <h4 class="container mt-4"><strong>글 작성페이지</strong></h4>
+    <div class="container mt-3">
+      <form action="/add" method="POST">
+        <div class="mb-3">
+          <label for="todoInput1" class="form-label">오늘의 할일</label>
+          <input type="text" class="form-control" id="todoInput1" placeholder="오늘의 할일" name="title" />
+        </div>
+        <div class="mb-3">
+          <label for="todoInput2" class="form-label">세부내용</label>
+          <textarea class="form-control" aria-label="With textarea" id="todoInput2" placeholder="세부내용" name="date"></textarea>
+        </div>
+        <button type="submit" class="btn btn-outline-secondary">저장하기</button>
+      </form>
+    </div>
+
     <!-- Optional JavaScript; choose one of the two! -->
     <!-- Option 1: Bootstrap Bundle with Popper -->
     <script
