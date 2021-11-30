@@ -21,11 +21,17 @@ MongoClient.connect("mongodb+srv://admin:qwer1234@cluster0.ka8sc.mongodb.net/myF
   });
 
   app.post("/add", function (요청, 응답) {
-    응답.send("전송완료");
-    console.log(요청.body.date);
-    console.log(요청.body.title);
-    db.collection("post").insertOne({ 제목: 요청.body.title, 날짜: 요청.body.date }, function (에러, 결과) {
-      console.log("저장완료");
+    db.collection("counter").findOne({ name: "게시물갯수" }, function (에러, 결과) {
+      var 총게시물갯수 = 결과.totalPost;
+
+      db.collection("post").insertOne({ _id: 총게시물갯수 + 1, 제목: 요청.body.title, 날짜: 요청.body.date }, function (에러, 결과) {
+        db.collection("counter").updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } }, function (에러, 결과) {
+          if (에러) {
+            return console.log(에러);
+          }
+          응답.send("전송완료");
+        });
+      });
     });
   });
 
