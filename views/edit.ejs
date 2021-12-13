@@ -20,14 +20,15 @@
 
     <h4 class="container mt-4"><strong>글 작성페이지</strong></h4>
     <div class="container mt-3">
-      <form action="/add?_method=PUT" method="POST">
+      <form action="/edit?_method=PUT" method="POST">
         <div class="mb-3">
-          <label for="todoInput1" class="form-label">오늘의 할일</label>
-          <input type="text" class="form-control" id="todoInput1" placeholder="오늘의 할일" name="title" value="<%= post.제목 %>" />
+          <label for="todoInput1" class="form-label">할일</label>
+          <input value="<%= post._id %>" name="id" style="display: none" />
+          <input value="<%= post.제목 %>" type="text" class="form-control" id="todoInput1" name="title" />
         </div>
         <div class="mb-3">
-          <label for="todoInput2" class="form-label">세부내용</label>
-          <input type="text" class="form-control" id="todoInput2" placeholder="Due Date" name="date" value="<%= post.날짜 %>" />
+          <label for="todoInput2" class="form-label">Due Date</label>
+          <input value="<%= post.날짜 %>" type="text" class="form-control" id="todoInput2" name="date" />
         </div>
         <button type="submit" class="btn btn-outline-secondary">저장하기</button>
       </form>

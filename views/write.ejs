@@ -22,12 +22,12 @@
     <div class="container mt-3">
       <form action="/add" method="POST">
         <div class="mb-3">
-          <label for="todoInput1" class="form-label">오늘의 할일</label>
-          <input type="text" class="form-control" id="todoInput1" placeholder="오늘의 할일" name="title" />
+          <label for="todoInput1" class="form-label">할일</label>
+          <input type="text" class="form-control" id="todoInput1" name="title" />
         </div>
         <div class="mb-3">
           <label for="todoInput2" class="form-label">세부내용</label>
-          <textarea class="form-control" aria-label="With textarea" id="todoInput2" placeholder="세부내용" name="date"></textarea>
+          <input type="text" class="form-control" id="todoInput2" name="date" />
         </div>
         <button type="submit" class="btn btn-outline-secondary">저장하기</button>
       </form>
