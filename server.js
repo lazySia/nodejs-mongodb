@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 const MongoClient = require("mongodb").MongoClient;
 app.set("view engine", "ejs");
+app.use("/public", express.static("public"));
 
 var db;
 MongoClient.connect("mongodb+srv://admin:qwer1234@cluster0.ka8sc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", function (에러, client) {
@@ -17,7 +18,7 @@ MongoClient.connect("mongodb+srv://admin:qwer1234@cluster0.ka8sc.mongodb.net/myF
   //   });
 
   app.get("/write", function (요청, 응답) {
-    응답.sendFile(__dirname + "/write.html");
+    응답.render("write.ejs");
   });
 
   app.post("/add", function (요청, 응답) {
@@ -53,6 +54,8 @@ app.delete("/delete", function (요청, 응답) {
   요청.body._id = parseInt(요청.body._id);
   db.collection("post").deleteOne(요청.body, function (에러, 결과) {
     console.log("삭제완료");
+    응답.status(200).send({ message: "성공했습니다" }); // 응답코드 200을 보내주세요
+    // 이거 적으면 무조건 성공하는 코드가 됨 400 적으면 실패
   });
   응답.send("삭제완료");
 });
@@ -61,4 +64,8 @@ app.get("/detail/:id", function (요청, 응답) {
   db.collection("post").findOne({ _id: parseInt(요청.params.id) }, function (에러, 결과) {
     응답.render("detail.ejs", { data: 결과 });
   });
+});
+
+app.get("/", function (요청, 응답) {
+  응답.render("index.ejs");
 });
