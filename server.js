@@ -3,6 +3,9 @@ const app = express();
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 const MongoClient = require("mongodb").MongoClient;
+const methodOverride = require("method-override");
+app.use(methodOverride("_method"));
+
 app.set("view engine", "ejs");
 app.use("/public", express.static("public"));
 
