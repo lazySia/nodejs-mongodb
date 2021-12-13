@@ -27,6 +27,7 @@
           <p>글번호 : <%= posts[i]._id %></p>
           <a href="/detail/<%=posts[i]._id %>">할일 제목 : <%= posts[i].제목 %></a>
           <p>할일 마감날짜 : <%= posts[i].날짜 %></p>
+          <button class="btn btn-light edit" data-id="<%= posts[i]._id %>">수정</button>
           <button class="btn btn-danger delete" data-id="<%= posts[i]._id %>">삭제</button>
         </li>
         <% } %>
@@ -35,6 +36,16 @@
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script>
+      // $(".edit").click(function (e) {
+      //   $.ajax({
+      //     method: "UPDATE",
+      //     url: "/edit",
+      //     data: {_id: e.target.dataset.id },
+      //   }).done(결과) => {
+
+      //   }
+      // })
+
       $(".delete").click(function (e) {
         $.ajax({
           method: "DELETE",

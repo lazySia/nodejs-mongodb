@@ -69,3 +69,9 @@ app.get("/detail/:id", function (요청, 응답) {
 app.get("/", function (요청, 응답) {
   응답.render("index.ejs");
 });
+
+app.get("/edit/:id", function (요청, 응답) {
+  db.collection("post").findOne({ _id: parseInt(요청.params.id) }, function (에러, 결과) {
+    응답.render("edit.ejs", { post: 결과 });
+  });
+});
