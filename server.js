@@ -5,13 +5,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const MongoClient = require("mongodb").MongoClient;
 const methodOverride = require("method-override");
 const { ExplainVerbosity } = require("mongodb");
+
+require("dotenv").config();
+
 app.use(methodOverride("_method"));
 
 app.set("view engine", "ejs");
 app.use("/public", express.static("public"));
 
 var db;
-MongoClient.connect("mongodb+srv://admin:qwer1234@cluster0.ka8sc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", function (에러, client) {
+MongoClient.connect(process.env.DB_URL, function (에러, client) {
   if (에러) {
     return console.log(에러);
   }
@@ -40,7 +43,7 @@ MongoClient.connect("mongodb+srv://admin:qwer1234@cluster0.ka8sc.mongodb.net/myF
     });
   });
 
-  app.listen(8080, () => {
+  app.listen(process.env.PORT, () => {
     console.log("listening on 8080");
   });
 });
@@ -108,9 +111,9 @@ app.post(
     응답.redirect("/");
   }
 );
-app.get("/fail", function (요청, 응답) {
-  응답.send("로그인실패");
-});
+// app.get("/fail", function (요청, 응답) {
+//   응답.send("로그인실패");
+// });
 
 //로그인했니 함수 미들웨어 사용
 app.get("/mypage", 로그인했니, function (요청, 응답) {
