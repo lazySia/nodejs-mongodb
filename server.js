@@ -58,10 +58,11 @@ app.delete("/delete", function (요청, 응답) {
   요청.body._id = parseInt(요청.body._id);
   db.collection("post").deleteOne(요청.body, function (에러, 결과) {
     console.log("삭제완료");
-    응답.status(200).send({ message: "성공했습니다" }); // 응답코드 200을 보내주세요
+    응답.status(200).json({ message: "성공했습니다" });
+    // 응답코드 200을 보내주세요
     // 이거 적으면 무조건 성공하는 코드가 됨 400 적으면 실패
   });
-  응답.send("삭제완료");
+  // 응답.send("삭제완료");
 });
 
 app.get("/detail/:id", function (요청, 응답) {
@@ -86,3 +87,52 @@ app.put("/edit", function (요청, 응답) {
     응답.redirect("/list");
   });
 });
+
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const session = require("express-session");
+// app.use : 미들웨어(요청, 응답 사이에 동작하는 코드)
+app.use(session({ secret: "비밀코드", resave: true, saveUninitialized: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get("/login", function (요청, 응답) {
+  응답.render("login.ejs");
+});
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    failureRedirect: "/fail", // 실패시 경로
+  }),
+  function (요청, 응답) {
+    응답.redirect("/");
+  }
+);
+app.get("/fail", function (요청, 응답) {
+  응답.send("로그인실패");
+});
+
+// 아이디 비번 인증하는 세부 코드
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: "id", //폼 name
+      passwordField: "pw", // 폼 name
+      session: true, // 로그인 후 세션을 저장할 것인지
+      passReqToCallback: false,
+    },
+    function (입력한아이디, 입력한비번, done) {
+      //console.log(입력한아이디, 입력한비번);
+      db.collection("login").findOne({ id: 입력한아이디 }, function (에러, 결과) {
+        if (에러) return done(에러);
+
+        if (!결과) return done(null, false, { message: "존재하지않는 아이디요" });
+        if (입력한비번 == 결과.pw) {
+          return done(null, 결과);
+        } else {
+          return done(null, false, { message: "비번틀렸어요" });
+        }
+      });
+    }
+  )
+);
