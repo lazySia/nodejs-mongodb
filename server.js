@@ -115,7 +115,7 @@ app.get("/fail", function (요청, 응답) {
 //로그인했니 함수 미들웨어 사용
 app.get("/mypage", 로그인했니, function (요청, 응답) {
   // 요청.user;
-  응답.render("mypage.ejs", { data: 요청.user });
+  응답.render("mypage.ejs", { 사용자: 요청.user });
 });
 
 function 로그인했니(요청, 응답, next) {
