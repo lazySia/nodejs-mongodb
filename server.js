@@ -29,21 +29,6 @@ app.get("/write", function (요청, 응답) {
   응답.render("write.ejs");
 });
 
-app.post("/add", function (요청, 응답) {
-  db.collection("counter").findOne({ name: "게시물갯수" }, function (에러, 결과) {
-    var 총게시물갯수 = 결과.totalPost;
-
-    db.collection("post").insertOne({ _id: 총게시물갯수 + 1, 제목: 요청.body.title, 날짜: 요청.body.date }, function (에러, 결과) {
-      db.collection("counter").updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } }, function (에러, 결과) {
-        if (에러) {
-          return console.log(에러);
-        }
-        응답.send("전송완료");
-      });
-    });
-  });
-});
-
 app.get("/list", function (요청, 응답) {
   db.collection("post")
     .find()
@@ -70,17 +55,6 @@ app.put("/edit", function (요청, 응답) {
     console.log("수정완료");
     응답.redirect("/list");
   });
-});
-
-app.delete("/delete", function (요청, 응답) {
-  요청.body._id = parseInt(요청.body._id);
-  db.collection("post").deleteOne(요청.body, function (에러, 결과) {
-    console.log("삭제완료");
-    응답.status(200).json({ message: "성공했습니다" });
-    // 응답코드 200을 보내주세요
-    // 이거 적으면 무조건 성공하는 코드가 됨 400 적으면 실패
-  });
-  // 응답.send("삭제완료");
 });
 
 app.get("/search", (요청, 응답) => {
@@ -133,17 +107,6 @@ app.post(
 
 app.get("/fail", function (요청, 응답) {
   응답.send("로그인실패");
-});
-
-app.post("/register", function (요청, 응답) {
-  // console.log(요청.body.id);
-  if (!db.collection("login").findOne({ id: 요청.body.id })) {
-    응답.send("이미 존재하는 아이디 입니다");
-  } else {
-    db.collection("login").insertOne({ id: 요청.body.id, pw: 요청.body.pw }, function (에러, 결과) {
-      응답.redirect("/");
-    });
-  }
 });
 
 //로그인했니 함수 미들웨어 사용
@@ -201,3 +164,45 @@ passport.deserializeUser(function (아이디, done) {
     done(null, 결과); // {id:test, pw:test}
   });
 });
+
+// 회원기능 필요하면 passport 셋팅하는 부분이 위에 있어야함
+app.post("/register", function (요청, 응답) {
+  // console.log(요청.body.id);
+  if (!db.collection("login").findOne({ id: 요청.body.id })) {
+    응답.send("이미 존재하는 아이디 입니다");
+  } else {
+    db.collection("login").insertOne({ id: 요청.body.id, pw: 요청.body.pw }, function (에러, 결과) {
+      응답.redirect("/");
+    });
+  }
+});
+
+app.post("/add", function (요청, 응답) {
+  db.collection("counter").findOne({ name: "게시물갯수" }, function (에러, 결과) {
+    var 총게시물갯수 = 결과.totalPost;
+    var 저장할거 = { _id: 총게시물갯수 + 1, 작성자: 요청.user._id, 제목: 요청.body.title, 날짜: 요청.body.date };
+
+    db.collection("post").insertOne(저장할거, function (에러, 결과) {
+      db.collection("counter").updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } }, function (에러, 결과) {
+        if (에러) {
+          return console.log(에러);
+        }
+        응답.send("전송완료");
+      });
+    });
+  });
+});
+
+app.delete("/delete", function (요청, 응답) {
+  요청.body._id = parseInt(요청.body._id);
+  //요청.body에 담겨온 게시물번호를 가진 글을 db에서 찾아서 삭제해주세요
+  db.collection("post").deleteOne({ _id: 요청.body._id, 작성자: 요청.user._id }, function (에러, 결과) {
+    console.log("삭제완료");
+    console.log("에러", 에러);
+    응답.status(200).send({ message: "성공했습니다" });
+  });
+});
+
+//고객이 이 경로로 요청했을 때 이런 미들웨어(방금 만든 라우터) 적용해주세요!
+app.use("/shop", require("./routes/shop.js"));
+app.use("/board/sub", require("./routes/board.js"));
