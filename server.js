@@ -5,11 +5,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const MongoClient = require("mongodb").MongoClient;
 const methodOverride = require("method-override");
 const { ExplainVerbosity } = require("mongodb");
-
 require("dotenv").config();
-
 app.use(methodOverride("_method"));
-
 app.set("view engine", "ejs");
 app.use("/public", express.static("public"));
 
@@ -19,32 +16,31 @@ MongoClient.connect(process.env.DB_URL, function (에러, client) {
     return console.log(에러);
   }
   db = client.db("todoapp");
-
-  //   db.collection("post").insertOne({ 이름: "John", _id: 100 }, function (에러, 결과) {
-  //     console.log("저장완료");
-  //   });
-
-  app.get("/write", function (요청, 응답) {
-    응답.render("write.ejs");
-  });
-
-  app.post("/add", function (요청, 응답) {
-    db.collection("counter").findOne({ name: "게시물갯수" }, function (에러, 결과) {
-      var 총게시물갯수 = 결과.totalPost;
-
-      db.collection("post").insertOne({ _id: 총게시물갯수 + 1, 제목: 요청.body.title, 날짜: 요청.body.date }, function (에러, 결과) {
-        db.collection("counter").updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } }, function (에러, 결과) {
-          if (에러) {
-            return console.log(에러);
-          }
-          응답.send("전송완료");
-        });
-      });
-    });
-  });
-
   app.listen(process.env.PORT, () => {
     console.log("listening on 8080");
+  });
+});
+
+app.get("/", function (요청, 응답) {
+  응답.render("index.ejs");
+});
+
+app.get("/write", function (요청, 응답) {
+  응답.render("write.ejs");
+});
+
+app.post("/add", function (요청, 응답) {
+  db.collection("counter").findOne({ name: "게시물갯수" }, function (에러, 결과) {
+    var 총게시물갯수 = 결과.totalPost;
+
+    db.collection("post").insertOne({ _id: 총게시물갯수 + 1, 제목: 요청.body.title, 날짜: 요청.body.date }, function (에러, 결과) {
+      db.collection("counter").updateOne({ name: "게시물갯수" }, { $inc: { totalPost: 1 } }, function (에러, 결과) {
+        if (에러) {
+          return console.log(에러);
+        }
+        응답.send("전송완료");
+      });
+    });
   });
 });
 
@@ -57,25 +53,10 @@ app.get("/list", function (요청, 응답) {
     });
 });
 
-app.delete("/delete", function (요청, 응답) {
-  요청.body._id = parseInt(요청.body._id);
-  db.collection("post").deleteOne(요청.body, function (에러, 결과) {
-    console.log("삭제완료");
-    응답.status(200).json({ message: "성공했습니다" });
-    // 응답코드 200을 보내주세요
-    // 이거 적으면 무조건 성공하는 코드가 됨 400 적으면 실패
-  });
-  // 응답.send("삭제완료");
-});
-
 app.get("/detail/:id", function (요청, 응답) {
   db.collection("post").findOne({ _id: parseInt(요청.params.id) }, function (에러, 결과) {
     응답.render("detail.ejs", { data: 결과 });
   });
-});
-
-app.get("/", function (요청, 응답) {
-  응답.render("index.ejs");
 });
 
 app.get("/edit/:id", function (요청, 응답) {
@@ -91,6 +72,43 @@ app.put("/edit", function (요청, 응답) {
   });
 });
 
+app.delete("/delete", function (요청, 응답) {
+  요청.body._id = parseInt(요청.body._id);
+  db.collection("post").deleteOne(요청.body, function (에러, 결과) {
+    console.log("삭제완료");
+    응답.status(200).json({ message: "성공했습니다" });
+    // 응답코드 200을 보내주세요
+    // 이거 적으면 무조건 성공하는 코드가 됨 400 적으면 실패
+  });
+  // 응답.send("삭제완료");
+});
+
+app.get("/search", (요청, 응답) => {
+  // 요청.query : 쿼리스트링 담겨있음 { value: '???'}
+  var 검색조건 = [
+    {
+      $search: {
+        index: "titleSearch",
+        // 검색 요청 부분
+        text: {
+          query: 요청.query.value,
+          path: "제목", // 제목날짜 둘다 찾고 싶으면 ['제목', '날짜']
+        },
+      },
+    },
+    { $sort: { _id: -1 } }, //_id 순서로 오름차순 정렬 (-1 : 내림차순)
+    { $limit: 2 }, // 2개까지만 보여줌
+    { $project: { 제목: 1, score: { $meta: "searchScore" } } }, //내가 원하는 것만 보여주고 싶을 때!, score는 자동으로 생성
+  ];
+  // console.log(요청.query.value);
+  db.collection("post")
+    .aggregate(검색조건)
+    .toArray((에러, 결과) => {
+      console.log(결과);
+      응답.render("search.ejs", { posts: 결과 });
+    });
+});
+
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const session = require("express-session");
@@ -102,6 +120,7 @@ app.use(passport.session());
 app.get("/login", function (요청, 응답) {
   응답.render("login.ejs");
 });
+
 app.post(
   "/login",
   passport.authenticate("local", {
@@ -111,9 +130,21 @@ app.post(
     응답.redirect("/");
   }
 );
-// app.get("/fail", function (요청, 응답) {
-//   응답.send("로그인실패");
-// });
+
+app.get("/fail", function (요청, 응답) {
+  응답.send("로그인실패");
+});
+
+app.post("/register", function (요청, 응답) {
+  // console.log(요청.body.id);
+  if (!db.collection("login").findOne({ id: 요청.body.id })) {
+    응답.send("이미 존재하는 아이디 입니다");
+  } else {
+    db.collection("login").insertOne({ id: 요청.body.id, pw: 요청.body.pw }, function (에러, 결과) {
+      응답.redirect("/");
+    });
+  }
+});
 
 //로그인했니 함수 미들웨어 사용
 app.get("/mypage", 로그인했니, function (요청, 응답) {
