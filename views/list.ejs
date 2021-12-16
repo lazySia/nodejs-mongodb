@@ -34,10 +34,7 @@
           <p>Due Date : <%= posts[i].날짜 %></p>
           <a href="/edit/<%=posts[i]._id %>"><button class="btn btn-light edit">수정</button></a>
           <button class="btn btn-danger delete" data-id="<%= posts[i]._id %>">삭제</button>
-          <form action="/chat" method="POST" style="float: right">
-            <input type="hidden" name="poster" value="<%= posts[i].작성자 %>" />
-            <button class="btn btn-secondary">이 유저와 채팅하기</button>
-          </form>
+          <button class="btn btn-secondary chat" data-id="<%= posts[i].작성자 %>">채팅하기</button>
         </li>
         <% } %>
       </ul>
@@ -64,6 +61,12 @@
         var 입력값 = $("#search-input").val();
         //URL갈아치우기 ( 버튼누르면 /search?~ 로 이동)
         window.location.replace(`/search?value=${입력값}`);
+      });
+      $(".chat").click(function (e) {
+        var _id = e.target.dataset.id;
+        $.post("/chatroom", { 당한사람id: _id }).then(() => {
+          console.log("채팅방 게시물 생성완료");
+        });
       });
     </script>
 

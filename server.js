@@ -245,16 +245,28 @@ app.get("/image/:imageName", function (요청, 응답) {
   응답.sendFile(__dirname + "/public/image/" + 요청.params.imageName);
 });
 
-app.get("/chat", function (요청, 응답) {
-  응답.render("chat.ejs");
+app.post("/chatroom", (요청, 응답) => {
+  var 저장 = {
+    title: "무슨채팅방",
+    member: [요청.body.poster, 요청.user._id],
+    date: new Date(),
+  };
+  db.collection("chatroom")
+    .insertOne(저장)
+    .then((에러, 결과) => {
+      if (에러) {
+        return console.log(에러);
+      }
+      응답.send("저장완료");
+    });
 });
 
-app.post("/chat", (요청, 응답) => {
-  var date = new Date();
-  db.collection("chatroom").insertOne({ title: "채팅방1", member: [요청.body.poster, 요청.user._id], date: date }, (에러, 결과) => {
-    if (에러) {
-      return console.log(에러);
-    }
-    응답.render("chat.ejs", { chat: 결과 });
-  });
+app.get("/chat", function (요청, 응답) {
+  db.collection("chatroom")
+    .find({ member: 요청.user._id })
+    .toArray()
+    .then((에러, 결과) => {
+      console.log(결과);
+      응답.render("chat.ejs", { data: 결과 });
+    });
 });
