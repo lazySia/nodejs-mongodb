@@ -29,10 +29,10 @@
       <div class="row">
         <div class="col-3">
           <ul class="list-group chat-list">
-            <% for(var i=0; i < data.length; i++) { %>
-            <li class="list-group-item" data-id="">
-              <h6><$= data[i].title %></h6>
-              <h6 class="text-small"><$= data[i].member[0] %></h6>
+            <% for (var i=0; i < data.length; i++){ %>
+            <li class="list-group-item" data-id="<%= data[i]._id %>">
+              <h6><%= data[0].title %></h6>
+              <h6 class="text-small"><%= data[i].member[0] %></h6>
             </li>
             <% } %>
           </ul>
@@ -53,6 +53,35 @@
         </div>
       </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+      var 지금누른채팅방id;
+      var eventSource; //일단변수
+      $(".list-group-item").click(function () {
+        지금누른채팅방id = this.dataset.id;
+        //프론트엔드에서 실시간 소통채널 여는법
+        eventSource = new EventSource("/message/" + 지금누른채팅방id);
+        eventSource.addEventListener("test", function (e) {
+          console.log(e.data);
+        });
+      });
+      $("li.list-group-item").click(function () {
+        $(this).css({ background: "#eee" });
+        지금누른채팅방id = $(this).attr("data-id");
+      });
+
+      $("#send").click(function () {
+        var 채팅내용 = $("#chat-input").val();
+        var 보낼거 = {
+          parent: 지금누른채팅방id,
+          content: 채팅내용,
+        };
+        $.post("/message", 보낼거).then((a) => {
+          console.log(a);
+        });
+      });
+    </script>
     <!-- Option 2: Separate Popper and Bootstrap JS -->
     <!--
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>

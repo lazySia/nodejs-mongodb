@@ -77,7 +77,7 @@ app.get("/search", (요청, 응답) => {
   // console.log(요청.query.value);
   db.collection("post")
     .aggregate(검색조건)
-    .toArray((에러, 결과) => {
+    .toArray(function (에러, 결과) {
       console.log(결과);
       응답.render("search.ejs", { posts: 결과 });
     });
@@ -245,28 +245,56 @@ app.get("/image/:imageName", function (요청, 응답) {
   응답.sendFile(__dirname + "/public/image/" + 요청.params.imageName);
 });
 
-app.post("/chatroom", (요청, 응답) => {
-  var 저장 = {
-    title: "무슨채팅방",
-    member: [요청.body.poster, 요청.user._id],
+app.post("/chatroom", function (요청, 응답) {
+  var ObjectId = require("mongodb").ObjectId;
+  var 저장할거 = {
+    title: "무슨무슨채팅방",
+    member: [ObjectId(요청.body.당한사람id), 요청.user._id],
     date: new Date(),
   };
   db.collection("chatroom")
-    .insertOne(저장)
-    .then((에러, 결과) => {
-      if (에러) {
-        return console.log(에러);
-      }
+    .insertOne(저장할거)
+    .then(function (에러, 결과) {
       응답.send("저장완료");
     });
 });
 
-app.get("/chat", function (요청, 응답) {
+app.get("/chat", 로그인했니, function (요청, 응답) {
   db.collection("chatroom")
     .find({ member: 요청.user._id })
-    .toArray()
-    .then((에러, 결과) => {
+    .toArray((에러, 결과) => {
       console.log(결과);
       응답.render("chat.ejs", { data: 결과 });
+    });
+});
+
+app.post("/message", 로그인했니, function (요청, 응답) {
+  var 저장할거 = {
+    parent: 요청.body.parent,
+    userid: 요청.user._id,
+    content: 요청.body.content,
+    date: new Date(),
+  };
+  db.collection("message")
+    .insertOne(저장할거)
+    .then((결과) => {
+      응답.send(결과);
+    });
+});
+
+app.get("/message/:parentid", 로그인했니, function (요청, 응답) {
+  응답.writeHead(200, {
+    Connection: "keep-alive",
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+  });
+
+  db.collection("message")
+    .find({ parent: 요청.params.parentid })
+    .toArray()
+    .then((결과) => {
+      console.log(결과);
+      응답.write("event: test\n");
+      응답.write(`data: ${JSON.stringify(결과)}\n\n`);
     });
 });

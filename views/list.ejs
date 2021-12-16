@@ -42,6 +42,11 @@
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script>
+      $("#search").click(function () {
+        var 입력값 = $("#search-input").val();
+        //URL갈아치우기 ( 버튼누르면 /search?~ 로 이동)
+        window.location.replace(`/search?value=${입력값}`);
+      });
       $(".delete").click(function (e) {
         $.ajax({
           method: "DELETE",
@@ -57,17 +62,19 @@
             console.log(xhr, code, err);
           });
       });
-      $("#search").click(function () {
-        var 입력값 = $("#search-input").val();
-        //URL갈아치우기 ( 버튼누르면 /search?~ 로 이동)
-        window.location.replace(`/search?value=${입력값}`);
-      });
       $(".chat").click(function (e) {
         var _id = e.target.dataset.id;
-        $.post("/chatroom", { 당한사람id: _id }).then(() => {
-          console.log("채팅방 게시물 생성완료");
-        });
+        $.post("/chatroom", { 당한사람id: _id })
+          .then(() => {
+            console.log("채팅방 게시물 생성완료");
+          })
+          .done((결과) => {
+            window.location.replace(`/chat`);
+          });
       });
+      // $(".chat").click(function (e) {
+      //   $.get("/chat");
+      // });
     </script>
 
     <!-- Optional JavaScript; choose one of the two! -->
